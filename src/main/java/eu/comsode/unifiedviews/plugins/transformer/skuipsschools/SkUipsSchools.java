@@ -1,13 +1,17 @@
 package eu.comsode.unifiedviews.plugins.transformer.skuipsschools;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.Date;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -48,7 +52,7 @@ public class SkUipsSchools extends AbstractDpu<SkUipsSchoolsConfig_V1> {
     protected void innerExecute() throws DPUException {
         try {
             Document doc = null;
-            doc = Jsoup.connect(INPUT_URL).userAgent("Mozilla").get();
+            doc = Jsoup.connect(INPUT_URL).userAgent("Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.4; en-US; rv:1.9.2.2) Gecko/20100316 Firefox/3.6.2").get();
 
             Element content = doc.select("td.td_content_body").first();
             Elements links = content.select("a[href]");
@@ -61,7 +65,11 @@ public class SkUipsSchools extends AbstractDpu<SkUipsSchoolsConfig_V1> {
                 File outputDirectory;
                 outputDirectory = new File(URI.create(filesOutput.getBaseFileURIString()));
                 File outputFile = File.createTempFile("____", FilenameUtils.getExtension(outputVirtualPath), outputDirectory);
-                FileUtils.copyURLToFile(website, outputFile);
+                
+                URLConnection hc = website.openConnection();
+                hc.setRequestProperty("User-Agent", "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.4; en-US; rv:1.9.2.2) Gecko/20100316 Firefox/3.6.2");
+                InputStream input = hc.getInputStream();
+                FileUtils.copyInputStreamToFile(input, outputFile);
 
                 String description = fileLink.text();
 
@@ -80,5 +88,24 @@ public class SkUipsSchools extends AbstractDpu<SkUipsSchoolsConfig_V1> {
             throw ContextUtils.dpuException(ctx, ex, "SkUipsSchools.execute.exception");
         }
 
+    }
+    
+    public static FileOutputStream openOutputStream(File file) throws IOException {
+        if (file.exists()) {
+            if (file.isDirectory()) {
+                throw new IOException("File '" + file + "' exists but is a directory");
+            }
+            if (file.canWrite() == false) {
+                throw new IOException("File '" + file + "' cannot be written to");
+            }
+        } else {
+            File parent = file.getParentFile();
+            if (parent != null) {
+                if (!parent.mkdirs() && !parent.isDirectory()) {
+                    throw new IOException("Directory '" + parent + "' could not be created");
+                }
+            }
+        }
+        return new FileOutputStream(file);
     }
 }
