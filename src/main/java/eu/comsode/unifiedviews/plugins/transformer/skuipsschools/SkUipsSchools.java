@@ -15,8 +15,6 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import eu.comsode.unifiedviews.plugins.transformer.skuipsschools.SkUipsSchoolsConfig_V1;
-import eu.comsode.unifiedviews.plugins.transformer.skuipsschools.SkUipsSchoolsVaadinDialog;
 import eu.unifiedviews.dataunit.DataUnit;
 import eu.unifiedviews.dataunit.DataUnitException;
 import eu.unifiedviews.dataunit.files.WritableFilesDataUnit;
@@ -50,13 +48,7 @@ public class SkUipsSchools extends AbstractDpu<SkUipsSchoolsConfig_V1> {
     protected void innerExecute() throws DPUException {
         try {
             Document doc = null;
-
-            try {
-                doc = Jsoup.connect(INPUT_URL).userAgent("Mozilla").get();
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
+            doc = Jsoup.connect(INPUT_URL).userAgent("Mozilla").get();
 
             Element content = doc.select("td.td_content_body").first();
             Elements links = content.select("a[href]");
@@ -85,7 +77,7 @@ public class SkUipsSchools extends AbstractDpu<SkUipsSchoolsConfig_V1> {
                 ResourceHelpers.setResource(filesOutput, outputSymbolicName, resource);
             }
         } catch (DataUnitException | IOException ex) {
-            ContextUtils.dpuException(ctx, ex, "SkUipsSchools.execute.exception");
+            throw ContextUtils.dpuException(ctx, ex, "SkUipsSchools.execute.exception");
         }
 
     }
