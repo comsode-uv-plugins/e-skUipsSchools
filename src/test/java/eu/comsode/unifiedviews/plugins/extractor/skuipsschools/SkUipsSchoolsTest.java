@@ -1,4 +1,4 @@
-package eu.comsode.unifiedviews.plugins.transformer.skuipsschools;
+package eu.comsode.unifiedviews.plugins.extractor.skuipsschools;
 
 import java.io.File;
 import java.net.URI;
@@ -10,6 +10,8 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import cz.cuni.mff.xrg.odcs.dpu.test.TestEnvironment;
+import eu.comsode.unifiedviews.plugins.extractor.skuipsschools.SkUipsSchools;
+import eu.comsode.unifiedviews.plugins.extractor.skuipsschools.SkUipsSchoolsConfig_V1;
 import eu.unifiedviews.dataunit.files.FilesDataUnit;
 import eu.unifiedviews.dataunit.files.WritableFilesDataUnit;
 import eu.unifiedviews.helpers.dataunit.files.FilesHelper;

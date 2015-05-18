@@ -1,4 +1,4 @@
-package eu.comsode.unifiedviews.plugins.transformer.skuipsschools;
+package eu.comsode.unifiedviews.plugins.extractor.skuipsschools;
 
 /**
  */
