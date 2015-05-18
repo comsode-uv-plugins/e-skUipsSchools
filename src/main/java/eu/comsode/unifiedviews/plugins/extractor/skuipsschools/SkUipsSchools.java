@@ -34,7 +34,7 @@ import eu.unifiedviews.helpers.dpu.exec.AbstractDpu;
 /**
  * Main data processing unit class.
  */
-@DPU.AsTransformer
+@DPU.AsExtractor
 public class SkUipsSchools extends AbstractDpu<SkUipsSchoolsConfig_V1> {
 
     private static final Logger LOG = LoggerFactory.getLogger(SkUipsSchools.class);
