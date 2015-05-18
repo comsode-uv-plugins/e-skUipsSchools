@@ -3,12 +3,20 @@ package eu.comsode.unifiedviews.plugins.transformer.skuipsschools;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URL;
 import java.util.Date;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import eu.comsode.unifiedviews.plugins.transformer.skuipsschools.SkUipsSchoolsConfig_V1;
+import eu.comsode.unifiedviews.plugins.transformer.skuipsschools.SkUipsSchoolsVaadinDialog;
 import eu.unifiedviews.dataunit.DataUnit;
 import eu.unifiedviews.dataunit.DataUnitException;
 import eu.unifiedviews.dataunit.files.WritableFilesDataUnit;
@@ -29,6 +37,8 @@ public class SkUipsSchools extends AbstractDpu<SkUipsSchoolsConfig_V1> {
 
     private static final Logger LOG = LoggerFactory.getLogger(SkUipsSchools.class);
 
+    private static final String INPUT_URL = "http://www.uips.sk/registre/zoznamy-skol-sz-v-exceli";
+
     @DataUnit.AsOutput(name = "filesOutput")
     public WritableFilesDataUnit filesOutput;
 
@@ -39,18 +49,29 @@ public class SkUipsSchools extends AbstractDpu<SkUipsSchoolsConfig_V1> {
     @Override
     protected void innerExecute() throws DPUException {
         try {
-            for (;;) {
-                String outputVirtualPath = "aaa.xls";
+            Document doc = null;
+
+            try {
+                doc = Jsoup.connect(INPUT_URL).userAgent("Mozilla").get();
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+
+            Element content = doc.select("td.td_content_body").first();
+            Elements links = content.select("a[href]");
+
+            for (Element fileLink : links) {
+                URL website = null;
+                website = new URL(fileLink.absUrl("href"));
+                String outputVirtualPath = FilenameUtils.getName(website.getPath());
                 String outputSymbolicName = outputVirtualPath;
                 File outputDirectory;
                 outputDirectory = new File(URI.create(filesOutput.getBaseFileURIString()));
                 File outputFile = File.createTempFile("____", FilenameUtils.getExtension(outputVirtualPath), outputDirectory);
+                FileUtils.copyURLToFile(website, outputFile);
 
-                // TODO fill the output file
-                // TODO do we know the mimetype of file from Content-Type HTTP header? if so, please save it as String mimetype = ...
-                // TODO extract Title of file (from HTML) as String description please.
-                String mimetype = "application/xls ? ";
-                String description = "title from HTML page";
+                String description = fileLink.text();
 
                 filesOutput.addExistingFile(outputVirtualPath, outputFile.toURI().toASCIIString());
                 VirtualPathHelpers.setVirtualPath(filesOutput, outputSymbolicName, outputVirtualPath);
@@ -60,7 +81,6 @@ public class SkUipsSchools extends AbstractDpu<SkUipsSchoolsConfig_V1> {
                 resource.setLast_modified(now);
                 resource.setSize(outputFile.length());
                 resource.setDescription(description);
-                resource.setMimetype(mimetype);
 
                 ResourceHelpers.setResource(filesOutput, outputSymbolicName, resource);
             }
